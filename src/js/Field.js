@@ -1,26 +1,26 @@
 import { Tile } from './Tile'
-import blocks from './blocks'
+import tileConfig from 'configs/tile'
+import fieldConfig from 'configs/field'
 
 export class Field {
   constructor(canvas) {
     this.context = canvas.getContext('2d')
 
     // config
-    this.numberRows = 8
-    this.numberColumns = 8
-    this.width = 540
-    this.height = 600
+    this.numberRows = fieldConfig.numberRows
+    this.numberColumns = fieldConfig.numberColumns
+    this.width = fieldConfig.width
 
     // computed
     this.images = []
     this.tileWidth = this.width / this.numberColumns
-    this.tileHeight = this.height / this.numberRows
+    this.tileHeight = this.tileWidth * tileConfig.aspectRatio
   }
 
   init() {
-    blocks.forEach((block) => {
+    tileConfig.defaultImages.forEach((image) => {
       let img = new Image()
-      img.src = block.default
+      img.src = image.default
       this.images.push(img)
     })
     Promise.all(this.images.map(img => new Promise(resolve => {
@@ -35,8 +35,8 @@ export class Field {
       for (let row = 0; row < this.numberRows; row++) {
         let x = col * this.tileWidth
         let y = row * this.tileHeight
-        const tile = new Tile(this.context, x, y, this.tileWidth, this.tileHeight, this.getRandomImage())
-        tile.draw()
+        const tile = new Tile(this.context, x, y, this.tileWidth, this.getRandomImage())
+        tile.appear()
       }
     }
   }

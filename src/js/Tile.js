@@ -19,24 +19,52 @@ export class Tile {
     this.context.drawImage(this.image, x, y, width, height)
   }
 
-  appear(callback) {
+  appear() {
+    return new Promise(resolve => {
+      let start = performance.now()
+
+      let step = timestamp => {
+        let elapsedTime = timestamp - start
+        this.clear()
+
+        const stepSize = this.width / this.appearanceTime
+        const width = elapsedTime >= this.appearanceTime ? this.width : stepSize * elapsedTime
+        const x = this.startPosition.x + (this.width - width) / 2
+        const y = this.startPosition.y + (this.width - width) / 2 * this.aspectRatio
+
+        this.draw(x, y, width)
+
+        if (elapsedTime < this.appearanceTime) {
+          requestAnimationFrame(step)
+        } else {
+          resolve()
+        }
+      }
+
+      requestAnimationFrame(step)
+    })
+  }
+
+  fallTo(target) {
+    if (target < this.startPosition.y) {
+      return
+    }
     let start = performance.now()
 
     let step = timestamp => {
-      let elapsedTime = timestamp - start
+      //let elapsedTime = timestamp - start
       this.clear()
 
-      const stepSize = this.width / this.appearanceTime
-      const width = elapsedTime >= this.appearanceTime ? this.width : stepSize * elapsedTime
-      const x = this.startPosition.x + (this.width - width) / 2
-      const y = this.startPosition.y + (this.width - width) / 2 * this.aspectRatio
+      const stepSize = 10
+      this.startPosition.y += stepSize
+      if (this.startPosition.y > target) {
+        this.startPosition.y = target
+      }
 
-      this.draw(x, y, width)
+      this.draw(this.startPosition.x, this.startPosition.y, this.width)
 
-      if (elapsedTime < this.appearanceTime) {
+      if (this.startPosition.y < target) {
         requestAnimationFrame(step)
-      } else if (callback) {
-        callback()
       }
     }
 

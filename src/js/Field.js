@@ -36,7 +36,7 @@ export class Field {
         let x = col * this.tileWidth
         let y = row * this.tileHeight
         const tile = new Tile(this.context, x, y, this.tileWidth, this.getRandomImage())
-        tile.appear()
+        tile.appear().then(() => tile.fallTo(500))
       }
     }
   }

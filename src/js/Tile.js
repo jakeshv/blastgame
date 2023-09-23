@@ -45,33 +45,35 @@ export class Tile {
     if (this.#targetPosition.y <= this.#startPosition.y) {
       return
     }
-    let start = performance.now()
+    return new Promise(resolve => {
 
-    let step = timestamp => {
-      //let elapsedTime = timestamp - start
-      this.clear()
+      let step = timestamp => {
+        this.clear()
 
-      const stepSize = 10
-      this.#startPosition.y += stepSize
-      if (this.#startPosition.y > this.#targetPosition.y) {
-        this.#startPosition.y = this.#targetPosition.y
+        const stepSize = 10
+        this.#startPosition.y += stepSize
+        if (this.#startPosition.y > this.#targetPosition.y) {
+          this.#startPosition.y = this.#targetPosition.y
+        }
+
+        this.draw(this.#startPosition.x, this.#startPosition.y, this.width)
+
+        if (this.#startPosition.y < this.#targetPosition.y) {
+          requestAnimationFrame(step)
+        } else {
+          resolve()
+        }
       }
 
-      this.draw(this.#startPosition.x, this.#startPosition.y, this.width)
-
-      if (this.#startPosition.y < this.#targetPosition.y) {
-        requestAnimationFrame(step)
-      }
-    }
-
-    requestAnimationFrame(step)
+      requestAnimationFrame(step)
+    })
   }
 
   clear() {
     this.context.clearRect(this.#startPosition.x, this.#startPosition.y, this.width, this.height)
   }
 
-  destroy() {
+  disappear() {
     const duration = this.#destroyTime
     return this.animateByTime((elapsedTime) => {
       this.clear()

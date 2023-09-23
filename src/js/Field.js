@@ -3,7 +3,7 @@ import tileConfig from 'configs/tile'
 import fieldConfig from 'configs/field'
 
 export class Field {
-  constructor(canvas) {
+  constructor(canvas, minTilesToClick = 1) {
     this.context = canvas.getContext('2d')
     canvas.addEventListener('click', this.onClick.bind(this))
 
@@ -11,6 +11,7 @@ export class Field {
     this.numberRows = fieldConfig.numberRows
     this.numberColumns = fieldConfig.numberColumns
     this.width = fieldConfig.width
+    this.minTilesToClick = minTilesToClick
 
     // computed
     this.images = []
@@ -61,14 +62,58 @@ export class Field {
   async onClick(e) {
     const col = Math.floor(e.offsetX / this.tileWidth)
     const row = Math.floor(e.offsetY / this.tileHeight)
-    const tile = this.fieldMap[col][row]
-    await tile.destroy()
-    this.fieldMap[col][row] = null
 
-    this.topUp()
+    await this.destroyWithNeighbours(col, row)
+    await this.topUp()
   }
 
-  topUp() {
+  async destroyWithNeighbours(col, row) {
+    const tile = this.fieldMap[col][row]
+    const image = tile.image
+    const neighbours = []
+    let count = 0
+
+    let check = (col, row) => {
+      const tile = this.fieldMap[col]?.[row]
+      if (!neighbours[col]) {
+        neighbours[col] = []
+      }
+
+      if (!tile || neighbours[col][row] || tile.image !== image) {
+        return
+      }
+
+      neighbours[col][row] = true
+      count++
+
+      check(col - 1, row)
+      check(col + 1, row)
+      check(col, row - 1)
+      check(col, row + 1)
+    }
+
+    check(col, row)
+
+    if (count < this.minTilesToClick) {
+      return
+    }
+
+    const promises = []
+
+    neighbours.forEach((item, col) => {
+      item.forEach((value, row) => {
+        const tile = this.fieldMap[col][row]
+        promises.push(tile.disappear())
+        this.fieldMap[col][row] = null
+      })
+    })
+
+    await Promise.all(promises)
+  }
+
+  async topUp() {
+    let fallPromises = []
+    let createdTiles = []
     for (let col = 0; col < this.numberColumns; col++) {
       let targets = []
       for (let row = this.numberRows - 1; row >= 0; row--) {
@@ -81,12 +126,14 @@ export class Field {
           this.fieldMap[col][targetRow] = tile
           tile.setTargetPosition(col * this.tileWidth, targetRow * this.tileHeight)
           targets.push(row)
-          tile.fall()
+          fallPromises.push(tile.fall())
         }
       }
       targets.map((targetRow) => {
-        this.createTile(col, targetRow).appear()
+        createdTiles.push(this.createTile(col, targetRow))
       })
     }
+    await Promise.all(fallPromises)
+    await Promise.all(createdTiles.map(tile => tile.appear()))
   }
 }

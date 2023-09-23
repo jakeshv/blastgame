@@ -42,8 +42,7 @@ export class Tile {
   }
 
   fall() {
-    const target = this.#targetPosition.y
-    if (target < this.#startPosition.y) {
+    if (this.#targetPosition.y <= this.#startPosition.y) {
       return
     }
     let start = performance.now()
@@ -54,13 +53,13 @@ export class Tile {
 
       const stepSize = 10
       this.#startPosition.y += stepSize
-      if (this.#startPosition.y > target) {
-        this.#startPosition.y = target
+      if (this.#startPosition.y > this.#targetPosition.y) {
+        this.#startPosition.y = this.#targetPosition.y
       }
 
       this.draw(this.#startPosition.x, this.#startPosition.y, this.width)
 
-      if (this.#startPosition.y < target) {
+      if (this.#startPosition.y < this.#targetPosition.y) {
         requestAnimationFrame(step)
       }
     }

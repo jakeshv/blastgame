@@ -1,5 +1,5 @@
 export default {
-  numberRows: 1,
+  numberRows: 8,
   numberColumns: 8,
   width: 540
 }

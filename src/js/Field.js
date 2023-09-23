@@ -5,6 +5,7 @@ import fieldConfig from 'configs/field'
 export class Field {
   constructor(canvas) {
     this.context = canvas.getContext('2d')
+    canvas.addEventListener('click', this.onClick.bind(this))
 
     // config
     this.numberRows = fieldConfig.numberRows
@@ -13,6 +14,7 @@ export class Field {
 
     // computed
     this.images = []
+    this.fieldMap = []
     this.tileWidth = this.width / this.numberColumns
     this.tileHeight = this.tileWidth * tileConfig.aspectRatio
   }
@@ -32,11 +34,13 @@ export class Field {
 
   fill() {
     for (let col = 0; col < this.numberColumns; col++) {
+      this.fieldMap[col] = []
       for (let row = 0; row < this.numberRows; row++) {
         let x = col * this.tileWidth
         let y = row * this.tileHeight
         const tile = new Tile(this.context, x, y, this.tileWidth, this.getRandomImage())
-        tile.appear().then(() => tile.fallTo(500))
+        this.fieldMap[col][row] = tile
+        tile.appear().then()
       }
     }
   }
@@ -44,5 +48,12 @@ export class Field {
   getRandomImage() {
     const random = Math.floor(Math.random() * this.images.length)
     return this.images[random]
+  }
+
+  onClick(e) {
+    const col = Math.floor(e.offsetX / this.tileWidth)
+    const row = Math.floor(e.offsetY / this.tileHeight)
+    const tile = this.fieldMap[col][row]
+    tile.destroy()
   }
 }

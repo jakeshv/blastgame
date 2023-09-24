@@ -4,6 +4,8 @@ import { TileFactory } from './Tiles/TileFactory'
 import { tileTypes } from './Tiles/TileTypes'
 
 export class Field {
+  #tilesDestroyCallback = () => {}
+
   constructor(canvas) {
     this.context = canvas.getContext('2d')
     canvas.addEventListener('click', this.onClick.bind(this))
@@ -22,17 +24,19 @@ export class Field {
     this.inProcess = false
   }
 
-  init() {
+  onTilesDestroy(callback) {
+    this.#tilesDestroyCallback = callback
+  }
+
+  async init() {
     tileConfig.defaultImages.forEach((image) => {
       let img = new Image()
       img.src = image.default
       this.images.push(img)
     })
-    Promise.all(this.images.map(img => new Promise(resolve => {
+    return Promise.all(this.images.map(img => new Promise(resolve => {
       img.onload = img.onerror = resolve
-    }))).then(() => {
-      this.fill()
-    })
+    })))
   }
 
   fill() {
@@ -96,27 +100,38 @@ export class Field {
         countTiles = await this.destroyByRadius(col, row, fieldConfig.bombRadius)
     }
 
+    this.#tilesDestroyCallback(countTiles)
     await this.topUp()
 
     this.inProcess = false
   }
 
   async destroyByRadius(centerCol, centerRow, radius) {
-    const promises = []
-    for (let col = centerCol - radius; col <= centerCol + radius; col++) {
-      for (let row = centerRow - radius; row <= centerRow + radius; row++) {
-        const tile = this.fieldMap[col]?.[row]
-        if (!tile) {
-          continue
-        }
-        promises.push(tile.disappear())
-        this.fieldMap[col][row] = null
-        if (tile.getType() === tileTypes.BOMB) {
-          promises.push(this.destroyByRadius(col, row, fieldConfig.bombRadius))
+    const map = []
+
+    let collect = (centerCol, centerRow, radius) => {
+      for (let col = centerCol - radius; col <= centerCol + radius; col++) {
+        for (let row = centerRow - radius; row <= centerRow + radius; row++) {
+          const tile = this.fieldMap[col]?.[row]
+
+          if (!map[col]) {
+            map[col] = []
+          }
+          if (!tile || map[col][row]) {
+            continue
+          }
+          map[col][row] = true
+
+          if (tile.getType() === tileTypes.BOMB) {
+            collect(col, row, fieldConfig.bombRadius)
+          }
         }
       }
     }
-    return Promise.all(promises)
+
+    collect(centerCol, centerRow, radius)
+
+    return this.destroyByMap(map)
   }
 
   async destroyWithNeighbours(col, row) {
@@ -125,7 +140,7 @@ export class Field {
     const neighbours = []
     let count = 0
 
-    let check = (col, row) => {
+    let collect = (col, row) => {
       const tile = this.fieldMap[col]?.[row]
       if (!neighbours[col]) {
         neighbours[col] = []
@@ -138,25 +153,31 @@ export class Field {
       neighbours[col][row] = true
       count++
 
-      check(col - 1, row)
-      check(col + 1, row)
-      check(col, row - 1)
-      check(col, row + 1)
+      collect(col - 1, row)
+      collect(col + 1, row)
+      collect(col, row - 1)
+      collect(col, row + 1)
     }
 
-    check(col, row)
+    collect(col, row)
 
     if (count < this.minTilesToClick) {
       return
     }
 
+    return this.destroyByMap(neighbours)
+  }
+
+  destroyByMap(map) {
+    let count = 0
     const promises = []
 
-    neighbours.forEach((item, col) => {
+    map.forEach((item, col) => {
       item.forEach((value, row) => {
         const tile = this.fieldMap[col][row]
         promises.push(tile.disappear())
         this.fieldMap[col][row] = null
+        count++
       })
     })
 

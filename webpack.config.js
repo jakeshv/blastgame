@@ -22,18 +22,11 @@ module.exports = {
       },
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: 'images/[name]-[hash].[ext]'
-          }
-        }]
+        type: 'asset/resource',
       },
       {
         test: /\.(eot|svg|ttf|otf|woff|woff2)$/,
-        use: [
-          'file-loader'
-        ]
+        type: 'asset/resource',
       }
     ]
   },
@@ -43,6 +36,7 @@ module.exports = {
   },
   resolve: {
     alias: {
+      fonts: path.resolve(__dirname, './src/assets/fonts'),
       styles: path.resolve(__dirname, './src/assets/styles'),
       images: path.resolve(__dirname, './src/assets/images'),
       configs: path.resolve(__dirname, './config'),

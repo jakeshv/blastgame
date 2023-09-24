@@ -12,7 +12,7 @@ export class BombTile extends AbstractTile {
     let currY = y + height / 2
 
     this.context.beginPath()
-    this.context.fillStyle = 'black'
+    this.context.fillStyle = '#c0c0c0'
     this.context.arc(currX, currY, width / 3, 0, 2 * Math.PI)
     this.context.fill()
   }

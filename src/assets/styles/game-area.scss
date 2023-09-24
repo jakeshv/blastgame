@@ -1,0 +1,53 @@
+@import 'styles/colors.scss';
+
+.game-area {
+  background: $lightblue;
+  padding: 5px;
+  border-radius: 25px;
+
+  &__content {
+    background: $darkblue;
+    padding: 10px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px 2px $darkblue;
+    position: relative;
+  }
+
+  &__window {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1s;
+  }
+}
+
+.lose {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background: $red;
+
+  &__text {
+    font-size: 24px;
+    width: 200px;
+  }
+}
+
+.level {
+  background: $mediumblue;
+  opacity: 0;
+
+  &__text {
+    font-size: 36px;
+  }
+  &__value {
+    font-size: 48px;
+  }
+}

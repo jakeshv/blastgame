@@ -1,7 +1,6 @@
 import 'styles/main.scss'
 
-import { Field } from './js/Field'
+import { Game } from './js/Game'
 
-const canvas = document.getElementById('game-field')
-const gameField = new Field(canvas)
+const gameField = new Game()
 gameField.init()

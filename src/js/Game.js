@@ -16,6 +16,7 @@ export class Game {
     this.progressElement = document.getElementById('progress')
     this.levelWindow = document.getElementById('level-window')
     this.levelElement = document.getElementById('level')
+    this.currentLevelElement = document.getElementById('current-level')
     this.loseWindow = document.getElementById('lose-window')
   }
 
@@ -26,10 +27,14 @@ export class Game {
 
   generateNewLevel() {
     this.levelElement.textContent = this.#level
+    this.currentLevelElement.textContent = this.#level
+
+    let moves = this.calculateMoves(this.#level)
+    let targetScope = this.calculateTargetScore(this.#level)
 
     this.setScope(0)
-    this.setMoves(3)
-    this.#targetScope = 100
+    this.setMoves(moves)
+    this.#targetScope = targetScope
 
     this.showLevelWindow()
   }
@@ -71,7 +76,7 @@ export class Game {
   }
 
   onTilesDestroy(tilesNumber) {
-    let addedScope = tilesNumber * 10
+    let addedScope = this.calculateScore(tilesNumber)
     let newScope = this.#scope + addedScope
     let moves = this.#moves
     moves--
@@ -86,6 +91,22 @@ export class Game {
 
     this.setMoves(moves)
     this.setScope(newScope)
+  }
+
+  calculateScore(tilesNumber) {
+    let score = 1
+    for (let i = 0; i < tilesNumber; i++) {
+      score += 3
+    }
+    return score
+  }
+
+  calculateMoves(level) {
+    return 10 + Math.floor(level / 3)
+  }
+
+  calculateTargetScore(level) {
+    return 100 + level * 30
   }
 
   win() {

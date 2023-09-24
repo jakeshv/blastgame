@@ -2,6 +2,8 @@
 @import 'game-area';
 @import 'scopes';
 @import 'progress';
+@import 'button';
+@import 'level-button';
 
 @font-face {
   font-family: Marvin;
@@ -23,19 +25,17 @@
 }
 
 .wrapper {
-  max-width: 800px;
+  max-width: 1000px;
   max-height: 1000px;
   margin: 0 auto;
-}
-
-.header {
-  height: 110px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 40px;
+  column-gap: 10px;
+  row-gap: 30px;
+  justify-items: center;
 }

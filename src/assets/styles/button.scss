@@ -1,0 +1,12 @@
+@import 'styles/colors.scss';
+
+.button {
+  background: linear-gradient(#f293fc 0, #b32fd2 30%, #5a0775 70%, #7115e6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 50px;
+  border-radius: 25px;
+  font-size: 20px;
+}

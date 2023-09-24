@@ -21,7 +21,10 @@ export class Field {
     this.fieldMap = []
     this.tileWidth = this.width / this.numberColumns
     this.tileHeight = this.tileWidth * tileConfig.aspectRatio
+    this.height = this.tileHeight * this.numberRows
     this.inProcess = false
+
+    canvas.height = this.height
   }
 
   onTilesDestroy(callback) {

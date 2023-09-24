@@ -7,15 +7,19 @@
 <body>
 <div class="app">
   <div class="wrapper">
-    <div class="header">
+    <div class="content">
       <div class="progress">
         <span class="progress__text">Прогресс</span>
         <div class="progress__line">
           <div id="progress" class="progress__value"></div>
         </div>
       </div>
-    </div>
-    <div class="content">
+      <div class="level-button">
+        <span class="level-button__text">Уровень</span>
+        <div class="button">
+          <span id="current-level" class="button__value">1</span>
+        </div>
+      </div>
       <div class="game-area">
         <div class="game-area__content">
           <div id="level-window" class="game-area__window level">
@@ -25,7 +29,7 @@
           <div id="lose-window" class="game-area__window lose">
             <span class="lose__text">К сожалению, Вы проиграли</span>
           </div>
-          <canvas id="game-field" class="game-area__field" width="540" height="600"></canvas>
+          <canvas id="game-field" class="game-area__field" width="540"></canvas>
         </div>
       </div>
       <div class="scopes">

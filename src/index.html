@@ -2,16 +2,30 @@
 <html lang="ru">
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-  <title>Blast</title>
+  <title>Blast Game</title>
 </head>
 <body>
 <div class="app">
   <div class="wrapper">
     <div class="header"></div>
-    <div class="game-area">
-      <div class="game-area__content">
-        <canvas id="game-field" class="game-area__field" width="540" height="600"></canvas>
+    <div class="content">
+      <div class="game-area">
+        <div class="game-area__content">
+          <canvas id="game-field" class="game-area__field" width="540" height="600"></canvas>
+        </div>
       </div>
+      <div class="scopes">
+        <div class="scopes__content">
+          <div class="scopes__moves">
+            <span class="scopes__moves-value">37</span>
+          </div>
+          <div class="scopes__scope">
+            <span class="scopes__scope-text">очки:</span>
+            <span class="scopes__scope-value">221</span>
+          </div>
+        </div>
+      </div>
+      <div class="bonuses"></div>
     </div>
   </div>
 </div>

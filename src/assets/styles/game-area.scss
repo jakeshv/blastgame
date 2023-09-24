@@ -1,0 +1,14 @@
+@import 'styles/colors.scss';
+
+.game-area {
+  background: $lightblue;
+  padding: 5px;
+  border-radius: 25px;
+
+  &__content {
+    background: $darkblue;
+    padding: 10px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px 2px $darkblue;
+  }
+}

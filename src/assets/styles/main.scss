@@ -1,4 +1,11 @@
 @import 'styles/colors.scss';
+@import 'game-area';
+@import 'scopes';
+
+@font-face {
+  font-family: Marvin;
+  src: url(fonts/Marvin.otf);
+}
 
 * {
   padding: 0;
@@ -10,6 +17,8 @@
   width: 100vw;
   height: 100vh;
   background: $aqua;
+  color: white;
+  font-family: Marvin, serif;
 }
 
 .wrapper {
@@ -22,22 +31,8 @@
   height: 100px;
 }
 
-.game-area {
-  width: 570px;
-  height: 630px;
-  background: $lightblue;
-  padding: 5px;
-  border-radius: 25px;
-
-  &__content {
-    background: $darkblue;
-    padding: 10px;
-    border-radius: 20px;
-    box-shadow: 0 0 10px 2px $darkblue;
-  }
-
-  &__field {
-    width: 100%;
-    height: 100%;
-  }
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 40px;
 }

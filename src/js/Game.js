@@ -9,11 +9,11 @@ export class Game {
   constructor() {
     const canvas = document.getElementById('game-field')
     this.field = new Field(canvas)
+    this.field.onTilesDestroy(this.onTilesDestroy.bind(this))
 
     this.movesElement = document.getElementById('moves')
     this.scopesElement = document.getElementById('scopes')
     this.progressElement = document.getElementById('progress')
-
 
   }
 
@@ -32,12 +32,23 @@ export class Game {
   }
 
   setScope(value) {
-    this.#scope = 0
+    this.#scope = value
     this.scopesElement.textContent = value
   }
 
   setMoves(value) {
     this.#moves = 0
     this.movesElement.textContent = value
+  }
+
+  onTilesDestroy(tilesNumber) {
+    let addedScope = tilesNumber * 10
+    let newScope = this.#scope + addedScope
+
+    if (newScope >= this.#targetScope) {
+      this.generateLevel()
+    } else {
+      this.setScope(newScope)
+    }
   }
 }

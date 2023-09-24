@@ -1,7 +1,7 @@
 import { Field } from './Field'
 
 export class Game {
-  #level = 0
+  #level = 1
   #moves = 0
   #scope = 0
   #targetScope = 0
@@ -14,41 +14,87 @@ export class Game {
     this.movesElement = document.getElementById('moves')
     this.scopesElement = document.getElementById('scopes')
     this.progressElement = document.getElementById('progress')
-
+    this.levelWindow = document.getElementById('level-window')
+    this.levelElement = document.getElementById('level')
+    this.loseWindow = document.getElementById('lose-window')
   }
 
-  init() {
-    this.field.init()
-
-    this.generateLevel()
+  async init() {
+    await this.field.init()
+    this.generateNewLevel()
   }
 
-  generateLevel() {
-    this.#level++
+  generateNewLevel() {
+    this.levelElement.textContent = this.#level
 
     this.setScope(0)
-    this.setMoves(10)
+    this.setMoves(3)
     this.#targetScope = 100
+
+    this.showLevelWindow()
+  }
+
+  showLevelWindow() {
+    setTimeout(() => {
+      this.levelWindow.style.opacity = '0'
+      this.levelWindow.style.pointerEvents = 'none'
+      this.field.fill()
+    }, 1500)
+    this.levelWindow.style.opacity = '1'
+    this.levelWindow.style.pointerEvents = 'auto'
+  }
+
+  showLoseWindow() {
+    setTimeout(() => {
+      this.loseWindow.style.opacity = '0'
+      this.loseWindow.style.pointerEvents = 'none'
+      this.generateNewLevel()
+    }, 1500)
+    this.loseWindow.style.visibility = 'visible'
+    this.loseWindow.style.opacity = '1'
+    this.loseWindow.style.pointerEvents = 'auto'
   }
 
   setScope(value) {
     this.#scope = value
     this.scopesElement.textContent = value
+    if (value > this.#targetScope) {
+      value = this.#targetScope
+    }
+    let progress = value / this.#targetScope * 100
+    this.progressElement.style.width = progress + '%'
   }
 
   setMoves(value) {
-    this.#moves = 0
+    this.#moves = value
     this.movesElement.textContent = value
   }
 
   onTilesDestroy(tilesNumber) {
     let addedScope = tilesNumber * 10
     let newScope = this.#scope + addedScope
+    let moves = this.#moves
+    moves--
 
     if (newScope >= this.#targetScope) {
-      this.generateLevel()
-    } else {
-      this.setScope(newScope)
+      return this.win()
     }
+
+    if (moves <= 0) {
+      return this.lose()
+    }
+
+    this.setMoves(moves)
+    this.setScope(newScope)
+  }
+
+  win() {
+    this.#level++
+    this.generateNewLevel()
+  }
+
+  lose() {
+    this.#level = 1
+    this.showLoseWindow()
   }
 }

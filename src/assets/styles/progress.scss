@@ -24,14 +24,15 @@
     box-shadow: 0 0 50px -5px $mediumblue;
     border-bottom: 1px solid $mediumblue;
     background: linear-gradient($deepblue 0%, $deepblue 40%, $darkblue 100%);
+    padding: 1px;
+    overflow: hidden;
   }
 
   &__value {
     width: 0;
     height: 100%;
     border-radius: 15px;
-    background: linear-gradient(#e7ffbd 0, #a1fe00 10%, #219e00 70%, #5ffd00 100%);
-    transition: width 1s;
-    transition-delay: 1s;
+    background: linear-gradient(#e7ffbd 0, $lightgreen 10%, $darkgreen 70%, $brightgreen 100%);
+    transition: width 1s ease-in-out;
   }
 }

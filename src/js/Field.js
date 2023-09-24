@@ -28,17 +28,15 @@ export class Field {
     this.#tilesDestroyCallback = callback
   }
 
-  init() {
+  async init() {
     tileConfig.defaultImages.forEach((image) => {
       let img = new Image()
       img.src = image.default
       this.images.push(img)
     })
-    Promise.all(this.images.map(img => new Promise(resolve => {
+    return Promise.all(this.images.map(img => new Promise(resolve => {
       img.onload = img.onerror = resolve
-    }))).then(() => {
-      this.fill()
-    })
+    })))
   }
 
   fill() {

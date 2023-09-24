@@ -1,13 +1,17 @@
 import tileConfig from 'configs/tile'
 
-export class Tile {
+const ABSTRACT_METHOD_ERROR = 'Метод должен быть определен в наследуемом классе'
+
+export class AbstractTile {
+  #type = null
   #targetPosition = {}
   #startPosition = {}
   #appearanceTime = tileConfig.appearanceTime
   #destroyTime = tileConfig.destroyTime
   #aspectRatio = tileConfig.aspectRatio
 
-  constructor(context, x, y, width, image) {
+  constructor(type, context, x, y, width, image) {
+    this.#type = type
     this.context = context
     this.image = image
 
@@ -18,9 +22,16 @@ export class Tile {
     }
   }
 
+  getAspectRatio() {
+    return this.#aspectRatio
+  }
+
+  getType() {
+    return this.#type
+  }
+
   draw(x, y, width) {
-    const height = width * this.#aspectRatio
-    this.context.drawImage(this.image, x, y, width, height)
+    throw Error(ABSTRACT_METHOD_ERROR)
   }
 
   appear() {
@@ -47,10 +58,10 @@ export class Tile {
     }
     return new Promise(resolve => {
 
-      let step = timestamp => {
+      let step = () => {
         this.clear()
 
-        const stepSize = 10
+        const stepSize = tileConfig.fallSpeed
         this.#startPosition.y += stepSize
         if (this.#startPosition.y > this.#targetPosition.y) {
           this.#startPosition.y = this.#targetPosition.y

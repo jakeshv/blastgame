@@ -1,9 +1,10 @@
-import { Tile } from './Tile'
 import tileConfig from 'configs/tile'
 import fieldConfig from 'configs/field'
+import { TileFactory } from './Tiles/TileFactory'
+import { tileTypes } from './Tiles/TileTypes'
 
 export class Field {
-  constructor(canvas, minTilesToClick = 1) {
+  constructor(canvas) {
     this.context = canvas.getContext('2d')
     canvas.addEventListener('click', this.onClick.bind(this))
 
@@ -11,13 +12,14 @@ export class Field {
     this.numberRows = fieldConfig.numberRows
     this.numberColumns = fieldConfig.numberColumns
     this.width = fieldConfig.width
-    this.minTilesToClick = minTilesToClick
+    this.minTilesToClick = fieldConfig.minTilesToClick
 
     // computed
     this.images = []
     this.fieldMap = []
     this.tileWidth = this.width / this.numberColumns
     this.tileHeight = this.tileWidth * tileConfig.aspectRatio
+    this.inProcess = false
   }
 
   init() {
@@ -43,12 +45,25 @@ export class Field {
   }
 
   createTile(col, row) {
-    const tile = new Tile(
+    const tile = TileFactory.create(
+      tileTypes.DEFAULT,
       this.context,
       col * this.tileWidth,
       row * this.tileHeight,
       this.tileWidth,
       this.getRandomImage()
+    )
+    this.fieldMap[col][row] = tile
+    return tile
+  }
+
+  createBomb(col, row) {
+    const tile = TileFactory.create(
+      tileTypes.BOMB,
+      this.context,
+      col * this.tileWidth,
+      row * this.tileHeight,
+      this.tileWidth
     )
     this.fieldMap[col][row] = tile
     return tile
@@ -60,11 +75,48 @@ export class Field {
   }
 
   async onClick(e) {
+    if (this.inProcess) {
+      return
+    }
+    this.inProcess = true
+
     const col = Math.floor(e.offsetX / this.tileWidth)
     const row = Math.floor(e.offsetY / this.tileHeight)
 
-    await this.destroyWithNeighbours(col, row)
+    const tile = this.fieldMap[col][row]
+    let countTiles = 0
+    switch (tile.getType()) {
+      case tileTypes.DEFAULT:
+        countTiles = await this.destroyWithNeighbours(col, row)
+        if (countTiles > fieldConfig.tilesForBomb) {
+          await this.createBomb(col, row).appear()
+        }
+        break
+      case tileTypes.BOMB:
+        countTiles = await this.destroyByRadius(col, row, fieldConfig.bombRadius)
+    }
+
     await this.topUp()
+
+    this.inProcess = false
+  }
+
+  async destroyByRadius(centerCol, centerRow, radius) {
+    const promises = []
+    for (let col = centerCol - radius; col <= centerCol + radius; col++) {
+      for (let row = centerRow - radius; row <= centerRow + radius; row++) {
+        const tile = this.fieldMap[col]?.[row]
+        if (!tile) {
+          continue
+        }
+        promises.push(tile.disappear())
+        this.fieldMap[col][row] = null
+        if (tile.getType() === tileTypes.BOMB) {
+          promises.push(this.destroyByRadius(col, row, fieldConfig.bombRadius))
+        }
+      }
+    }
+    return Promise.all(promises)
   }
 
   async destroyWithNeighbours(col, row) {
@@ -108,7 +160,9 @@ export class Field {
       })
     })
 
-    await Promise.all(promises)
+    return Promise.all(promises).then(() => {
+      return count
+    })
   }
 
   async topUp() {

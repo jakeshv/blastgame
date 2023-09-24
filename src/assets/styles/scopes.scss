@@ -20,8 +20,8 @@
   }
 
   &__moves {
-    width: 65%;
-    height: 65%;
+    width: 68%;
+    height: 68%;
     background: url(images/ball.png) no-repeat;
     background-size: contain;
     display: flex;
@@ -35,8 +35,8 @@
 
   &__scope {
     width: 85%;
-    height: 35%;
-    background: linear-gradient($darkblue 0%, $mediumblue 150%);
+    height: 30%;
+    background: linear-gradient($darkblue 0%, $darkblue 30%, $mediumblue 150%);
     border-radius: 10px;
     display: flex;
     flex-direction: column;

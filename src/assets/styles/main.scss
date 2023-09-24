@@ -1,6 +1,7 @@
 @import 'styles/colors.scss';
 @import 'game-area';
 @import 'scopes';
+@import 'progress';
 
 @font-face {
   font-family: Marvin;
@@ -28,7 +29,9 @@
 }
 
 .header {
-  height: 100px;
+  height: 110px;
+  display: flex;
+  justify-content: center;
 }
 
 .content {

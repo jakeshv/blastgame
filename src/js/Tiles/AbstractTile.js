@@ -1,13 +1,17 @@
 import tileConfig from 'configs/tile'
 
-export class Tile {
+const ABSTRACT_METHOD_ERROR = 'Метод должен быть определен в наследуемом классе'
+
+export class AbstractTile {
+  #type = null
   #targetPosition = {}
   #startPosition = {}
   #appearanceTime = tileConfig.appearanceTime
   #destroyTime = tileConfig.destroyTime
   #aspectRatio = tileConfig.aspectRatio
 
-  constructor(context, x, y, width, image) {
+  constructor(type, context, x, y, width, image) {
+    this.#type = type
     this.context = context
     this.image = image
 
@@ -18,9 +22,16 @@ export class Tile {
     }
   }
 
+  getAspectRatio() {
+    return this.#aspectRatio
+  }
+
+  getType() {
+    return this.#type
+  }
+
   draw(x, y, width) {
-    const height = width * this.#aspectRatio
-    this.context.drawImage(this.image, x, y, width, height)
+    throw Error(ABSTRACT_METHOD_ERROR)
   }
 
   appear() {
@@ -45,33 +56,35 @@ export class Tile {
     if (this.#targetPosition.y <= this.#startPosition.y) {
       return
     }
-    let start = performance.now()
+    return new Promise(resolve => {
 
-    let step = timestamp => {
-      //let elapsedTime = timestamp - start
-      this.clear()
+      let step = () => {
+        this.clear()
 
-      const stepSize = 10
-      this.#startPosition.y += stepSize
-      if (this.#startPosition.y > this.#targetPosition.y) {
-        this.#startPosition.y = this.#targetPosition.y
+        const stepSize = tileConfig.fallSpeed
+        this.#startPosition.y += stepSize
+        if (this.#startPosition.y > this.#targetPosition.y) {
+          this.#startPosition.y = this.#targetPosition.y
+        }
+
+        this.draw(this.#startPosition.x, this.#startPosition.y, this.width)
+
+        if (this.#startPosition.y < this.#targetPosition.y) {
+          requestAnimationFrame(step)
+        } else {
+          resolve()
+        }
       }
 
-      this.draw(this.#startPosition.x, this.#startPosition.y, this.width)
-
-      if (this.#startPosition.y < this.#targetPosition.y) {
-        requestAnimationFrame(step)
-      }
-    }
-
-    requestAnimationFrame(step)
+      requestAnimationFrame(step)
+    })
   }
 
   clear() {
     this.context.clearRect(this.#startPosition.x, this.#startPosition.y, this.width, this.height)
   }
 
-  destroy() {
+  disappear() {
     const duration = this.#destroyTime
     return this.animateByTime((elapsedTime) => {
       this.clear()

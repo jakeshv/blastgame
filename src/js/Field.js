@@ -1,6 +1,7 @@
-import { Tile } from './Tile'
 import tileConfig from 'configs/tile'
 import fieldConfig from 'configs/field'
+import { TileFactory } from './Tiles/TileFactory'
+import { tileTypes } from './Tiles/TileTypes'
 
 export class Field {
   constructor(canvas) {
@@ -11,12 +12,14 @@ export class Field {
     this.numberRows = fieldConfig.numberRows
     this.numberColumns = fieldConfig.numberColumns
     this.width = fieldConfig.width
+    this.minTilesToClick = fieldConfig.minTilesToClick
 
     // computed
     this.images = []
     this.fieldMap = []
     this.tileWidth = this.width / this.numberColumns
     this.tileHeight = this.tileWidth * tileConfig.aspectRatio
+    this.inProcess = false
   }
 
   init() {
@@ -42,12 +45,25 @@ export class Field {
   }
 
   createTile(col, row) {
-    const tile = new Tile(
+    const tile = TileFactory.create(
+      tileTypes.DEFAULT,
       this.context,
       col * this.tileWidth,
       row * this.tileHeight,
       this.tileWidth,
       this.getRandomImage()
+    )
+    this.fieldMap[col][row] = tile
+    return tile
+  }
+
+  createBomb(col, row) {
+    const tile = TileFactory.create(
+      tileTypes.BOMB,
+      this.context,
+      col * this.tileWidth,
+      row * this.tileHeight,
+      this.tileWidth
     )
     this.fieldMap[col][row] = tile
     return tile
@@ -59,16 +75,99 @@ export class Field {
   }
 
   async onClick(e) {
+    if (this.inProcess) {
+      return
+    }
+    this.inProcess = true
+
     const col = Math.floor(e.offsetX / this.tileWidth)
     const row = Math.floor(e.offsetY / this.tileHeight)
-    const tile = this.fieldMap[col][row]
-    await tile.destroy()
-    this.fieldMap[col][row] = null
 
-    this.topUp()
+    const tile = this.fieldMap[col][row]
+    let countTiles = 0
+    switch (tile.getType()) {
+      case tileTypes.DEFAULT:
+        countTiles = await this.destroyWithNeighbours(col, row)
+        if (countTiles > fieldConfig.tilesForBomb) {
+          await this.createBomb(col, row).appear()
+        }
+        break
+      case tileTypes.BOMB:
+        countTiles = await this.destroyByRadius(col, row, fieldConfig.bombRadius)
+    }
+
+    await this.topUp()
+
+    this.inProcess = false
   }
 
-  topUp() {
+  async destroyByRadius(centerCol, centerRow, radius) {
+    const promises = []
+    for (let col = centerCol - radius; col <= centerCol + radius; col++) {
+      for (let row = centerRow - radius; row <= centerRow + radius; row++) {
+        const tile = this.fieldMap[col]?.[row]
+        if (!tile) {
+          continue
+        }
+        promises.push(tile.disappear())
+        this.fieldMap[col][row] = null
+        if (tile.getType() === tileTypes.BOMB) {
+          promises.push(this.destroyByRadius(col, row, fieldConfig.bombRadius))
+        }
+      }
+    }
+    return Promise.all(promises)
+  }
+
+  async destroyWithNeighbours(col, row) {
+    const tile = this.fieldMap[col][row]
+    const image = tile.image
+    const neighbours = []
+    let count = 0
+
+    let check = (col, row) => {
+      const tile = this.fieldMap[col]?.[row]
+      if (!neighbours[col]) {
+        neighbours[col] = []
+      }
+
+      if (!tile || neighbours[col][row] || tile.image !== image) {
+        return
+      }
+
+      neighbours[col][row] = true
+      count++
+
+      check(col - 1, row)
+      check(col + 1, row)
+      check(col, row - 1)
+      check(col, row + 1)
+    }
+
+    check(col, row)
+
+    if (count < this.minTilesToClick) {
+      return
+    }
+
+    const promises = []
+
+    neighbours.forEach((item, col) => {
+      item.forEach((value, row) => {
+        const tile = this.fieldMap[col][row]
+        promises.push(tile.disappear())
+        this.fieldMap[col][row] = null
+      })
+    })
+
+    return Promise.all(promises).then(() => {
+      return count
+    })
+  }
+
+  async topUp() {
+    let fallPromises = []
+    let createdTiles = []
     for (let col = 0; col < this.numberColumns; col++) {
       let targets = []
       for (let row = this.numberRows - 1; row >= 0; row--) {
@@ -81,12 +180,14 @@ export class Field {
           this.fieldMap[col][targetRow] = tile
           tile.setTargetPosition(col * this.tileWidth, targetRow * this.tileHeight)
           targets.push(row)
-          tile.fall()
+          fallPromises.push(tile.fall())
         }
       }
       targets.map((targetRow) => {
-        this.createTile(col, targetRow).appear()
+        createdTiles.push(this.createTile(col, targetRow))
       })
     }
+    await Promise.all(fallPromises)
+    await Promise.all(createdTiles.map(tile => tile.appear()))
   }
 }

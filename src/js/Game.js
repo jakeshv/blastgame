@@ -1,4 +1,5 @@
 import { Field } from './Field'
+import game from 'configs/game'
 
 export class Game {
   #level = 1
@@ -9,7 +10,8 @@ export class Game {
   constructor() {
     const canvas = document.getElementById('game-field')
     this.field = new Field(canvas)
-    this.field.onTilesDestroy(this.onTilesDestroy.bind(this))
+    this.field.addEventListener('tilesDestroy', this.onTilesDestroy.bind(this))
+    this.field.addEventListener('hasNotAllowAction', this.onHasNotAllowAction.bind(this))
 
     this.movesElement = document.getElementById('moves')
     this.scopesElement = document.getElementById('scopes')
@@ -18,6 +20,8 @@ export class Game {
     this.levelElement = document.getElementById('level')
     this.currentLevelElement = document.getElementById('current-level')
     this.loseWindow = document.getElementById('lose-window')
+
+    this.refillNumber = game.maxRefill
   }
 
   async init() {
@@ -31,6 +35,9 @@ export class Game {
 
     let moves = this.calculateMoves(this.#level)
     let targetScope = this.calculateTargetScore(this.#level)
+    let colorNumbers = this.calculateColorNumbers(this.#level)
+
+    this.field.setColorNumbers(colorNumbers)
 
     this.setScope(0)
     this.setMoves(moves)
@@ -76,6 +83,9 @@ export class Game {
   }
 
   onTilesDestroy(tilesNumber) {
+    if (!tilesNumber) {
+      return
+    }
     let addedScope = this.calculateScore(tilesNumber)
     let newScope = this.#scope + addedScope
     let moves = this.#moves
@@ -109,6 +119,10 @@ export class Game {
     return 100 + level * 30
   }
 
+  calculateColorNumbers(level) {
+    return 3 + Math.floor(level / 3)
+  }
+
   win() {
     this.#level++
     this.generateNewLevel()
@@ -117,5 +131,14 @@ export class Game {
   lose() {
     this.#level = 1
     this.showLoseWindow()
+  }
+
+  onHasNotAllowAction() {
+    if (this.refillNumber > 0) {
+      this.refillNumber--
+      this.field.fill()
+    } else {
+      console.log('onHasNotAllowAction')
+    }
   }
 }

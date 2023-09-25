@@ -1,8 +1,8 @@
 export default {
-  numberRows: 8,
-  numberColumns: 8,
+  numberRows: 2,
+  numberColumns: 2,
   width: 540,
-  minTilesToClick: 3,
-  tilesForBomb: 6,
+  minTilesToClick: 1,
+  tilesForBomb: 1,
   bombRadius: 2,
 }

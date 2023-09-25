@@ -117,7 +117,7 @@ export class Field {
           return
         }
         countTiles = await this.destroyCollection()
-        if (countTiles > fieldConfig.tilesForBomb) {
+        if (countTiles >= fieldConfig.tilesForBomb) {
           await this.createBomb(col, row).appear()
         }
         break
@@ -240,7 +240,7 @@ export class Field {
           case tileTypes.DEFAULT:
             const image = tile.image
             const countTiles = this.collectByColor(col, row, image)
-            if (countTiles > this.minTilesToClick) {
+            if (countTiles >= this.minTilesToClick) {
               this.clearCollection()
               return true
             }

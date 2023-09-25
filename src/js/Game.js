@@ -6,12 +6,13 @@ export class Game {
   #moves = 0
   #scope = 0
   #targetScope = 0
+  #refillNumber = 0
 
   constructor() {
     const canvas = document.getElementById('game-field')
     this.field = new Field(canvas)
     this.field.addEventListener('tilesDestroy', this.onTilesDestroy.bind(this))
-    this.field.addEventListener('hasNotAllowAction', this.onHasNotAllowAction.bind(this))
+    this.field.addEventListener('hasNotAllowAction', this.showNotAllowActionWindow.bind(this))
 
     this.movesElement = document.getElementById('moves')
     this.scopesElement = document.getElementById('scopes')
@@ -20,8 +21,7 @@ export class Game {
     this.levelElement = document.getElementById('level')
     this.currentLevelElement = document.getElementById('current-level')
     this.loseWindow = document.getElementById('lose-window')
-
-    this.refillNumber = game.maxRefill
+    this.notAllowActionWindow = document.getElementById('not-allow-action-window')
   }
 
   async init() {
@@ -38,10 +38,10 @@ export class Game {
     let colorNumbers = this.calculateColorNumbers(this.#level)
 
     this.field.setColorNumbers(colorNumbers)
-
     this.setScope(0)
     this.setMoves(moves)
     this.#targetScope = targetScope
+    this.#refillNumber = game.maxRefill
 
     this.showLevelWindow()
   }
@@ -65,6 +65,24 @@ export class Game {
     this.loseWindow.style.visibility = 'visible'
     this.loseWindow.style.opacity = '1'
     this.loseWindow.style.pointerEvents = 'auto'
+  }
+
+  showNotAllowActionWindow() {
+    setTimeout(() => {
+      this.notAllowActionWindow.style.visibility = 'visible'
+      this.notAllowActionWindow.style.opacity = '1'
+      this.notAllowActionWindow.style.pointerEvents = 'auto'
+      setTimeout(() => {
+        if (this.#refillNumber > 0) {
+          this.#refillNumber--
+          this.field.fill()
+        } else {
+          this.showLoseWindow()
+        }
+        this.notAllowActionWindow.style.opacity = '0'
+        this.notAllowActionWindow.style.pointerEvents = 'none'
+      }, 1000)
+    }, 1000)
   }
 
   setScope(value) {
@@ -131,14 +149,5 @@ export class Game {
   lose() {
     this.#level = 1
     this.showLoseWindow()
-  }
-
-  onHasNotAllowAction() {
-    if (this.refillNumber > 0) {
-      this.refillNumber--
-      this.field.fill()
-    } else {
-      console.log('onHasNotAllowAction')
-    }
   }
 }

@@ -30,6 +30,14 @@ export class AbstractTile {
     return this.#type
   }
 
+  getDestroyTime() {
+    return this.#destroyTime
+  }
+
+  getStartPosition() {
+    return this.#startPosition
+  }
+
   draw(x, y, width) {
     throw Error(ABSTRACT_METHOD_ERROR)
   }

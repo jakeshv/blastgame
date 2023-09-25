@@ -41,7 +41,7 @@ export class Field {
 
   fireEvent(event, ...params) {
     if (this.#listeners.hasOwnProperty(event) && typeof this.#listeners[event] === 'function') {
-      this.#listeners[event](params)
+      this.#listeners[event](...params)
     }
   }
 

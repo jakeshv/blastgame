@@ -4,9 +4,16 @@ import { TileFactory } from './Tiles/TileFactory'
 import { tileTypes } from './Tiles/TileTypes'
 
 export class Field {
-  #tilesDestroyCallback = () => {}
+  #listeners = {
+    tilesDestroy: () => {
+    },
+    hasNotAllowAction: () => {
+    }
+  }
+  #tilesCollection = []
 
-  constructor(canvas) {
+  constructor(canvas, resourceLoader) {
+    this.resourceLoader = resourceLoader
     this.context = canvas.getContext('2d')
     canvas.addEventListener('click', this.onClick.bind(this))
 
@@ -17,26 +24,25 @@ export class Field {
     this.minTilesToClick = fieldConfig.minTilesToClick
 
     // computed
-    this.images = []
     this.fieldMap = []
     this.tileWidth = this.width / this.numberColumns
     this.tileHeight = this.tileWidth * tileConfig.aspectRatio
+    this.height = this.tileHeight * this.numberRows
     this.inProcess = false
+
+    canvas.height = this.height
   }
 
-  onTilesDestroy(callback) {
-    this.#tilesDestroyCallback = callback
+  addEventListener(event, callback) {
+    if (this.#listeners.hasOwnProperty(event)) {
+      this.#listeners[event] = callback
+    }
   }
 
-  async init() {
-    tileConfig.defaultImages.forEach((image) => {
-      let img = new Image()
-      img.src = image.default
-      this.images.push(img)
-    })
-    return Promise.all(this.images.map(img => new Promise(resolve => {
-      img.onload = img.onerror = resolve
-    })))
+  fireEvent(event, ...params) {
+    if (this.#listeners.hasOwnProperty(event) && typeof this.#listeners[event] === 'function') {
+      this.#listeners[event](...params)
+    }
   }
 
   fill() {
@@ -46,36 +52,39 @@ export class Field {
         this.createTile(col, row).appear().then()
       }
     }
+
+    if (!this.hasAllowAction()) {
+      this.fireEvent('hasNotAllowAction')
+    }
   }
 
-  createTile(col, row) {
+  createTile(col, row, type = tileTypes.DEFAULT) {
     const tile = TileFactory.create(
-      tileTypes.DEFAULT,
+      type,
       this.context,
       col * this.tileWidth,
       row * this.tileHeight,
       this.tileWidth,
-      this.getRandomImage()
+      this.getRandomImage(),
+      this.resourceLoader
     )
     this.fieldMap[col][row] = tile
     return tile
   }
 
   createBomb(col, row) {
-    const tile = TileFactory.create(
-      tileTypes.BOMB,
-      this.context,
-      col * this.tileWidth,
-      row * this.tileHeight,
-      this.tileWidth
-    )
-    this.fieldMap[col][row] = tile
-    return tile
+    return this.createTile(col, row, tileTypes.BOMB)
   }
 
   getRandomImage() {
-    const random = Math.floor(Math.random() * this.images.length)
-    return this.images[random]
+    const images = this.resourceLoader.getDefaultTileImages()
+    let length = this.colorNumbers && this.colorNumbers < images.length ? this.colorNumbers : images.length
+    const random = Math.floor(Math.random() * length)
+    return images[random]
+  }
+
+  setColorNumbers(colorNumbers) {
+    this.colorNumbers = colorNumbers
   }
 
   async onClick(e) {
@@ -91,66 +100,68 @@ export class Field {
     let countTiles = 0
     switch (tile.getType()) {
       case tileTypes.DEFAULT:
-        countTiles = await this.destroyWithNeighbours(col, row)
-        if (countTiles > fieldConfig.tilesForBomb) {
+        const image = tile.image
+        countTiles = this.collectByColor(col, row, image)
+        if (countTiles < this.minTilesToClick) {
+          this.clearCollection()
+          this.inProcess = false
+          return
+        }
+        countTiles = await this.destroyCollection(col, row)
+        if (countTiles >= fieldConfig.tilesForBomb) {
           await this.createBomb(col, row).appear()
         }
         break
       case tileTypes.BOMB:
-        countTiles = await this.destroyByRadius(col, row, fieldConfig.bombRadius)
+        this.collectByRadius(col, row, fieldConfig.bombRadius)
+        countTiles = await this.destroyCollection(col, row)
+        break
     }
 
-    this.#tilesDestroyCallback(countTiles)
+    this.fireEvent('tilesDestroy', countTiles)
     await this.topUp()
+
+    if (!this.hasAllowAction()) {
+      this.fireEvent('hasNotAllowAction')
+    }
 
     this.inProcess = false
   }
 
-  async destroyByRadius(centerCol, centerRow, radius) {
-    const map = []
+  collectByRadius(centerCol, centerRow, radius) {
+    for (let col = centerCol - radius; col <= centerCol + radius; col++) {
+      for (let row = centerRow - radius; row <= centerRow + radius; row++) {
+        const tile = this.fieldMap[col]?.[row]
 
-    let collect = (centerCol, centerRow, radius) => {
-      for (let col = centerCol - radius; col <= centerCol + radius; col++) {
-        for (let row = centerRow - radius; row <= centerRow + radius; row++) {
-          const tile = this.fieldMap[col]?.[row]
+        if (!this.#tilesCollection[col]) {
+          this.#tilesCollection[col] = []
+        }
+        if (!tile || this.#tilesCollection[col][row]) {
+          continue
+        }
+        this.#tilesCollection[col][row] = true
 
-          if (!map[col]) {
-            map[col] = []
-          }
-          if (!tile || map[col][row]) {
-            continue
-          }
-          map[col][row] = true
-
-          if (tile.getType() === tileTypes.BOMB) {
-            collect(col, row, fieldConfig.bombRadius)
-          }
+        if (tile.getType() === tileTypes.BOMB) {
+          this.collectByRadius(col, row, fieldConfig.bombRadius)
         }
       }
     }
-
-    collect(centerCol, centerRow, radius)
-
-    return this.destroyByMap(map)
   }
 
-  async destroyWithNeighbours(col, row) {
-    const tile = this.fieldMap[col][row]
-    const image = tile.image
-    const neighbours = []
+  collectByColor(col, row, image) {
     let count = 0
 
     let collect = (col, row) => {
       const tile = this.fieldMap[col]?.[row]
-      if (!neighbours[col]) {
-        neighbours[col] = []
+      if (!this.#tilesCollection[col]) {
+        this.#tilesCollection[col] = []
       }
 
-      if (!tile || neighbours[col][row] || tile.image !== image) {
+      if (!tile || tile.getType() !== tileTypes.DEFAULT || this.#tilesCollection[col][row] || tile.image !== image) {
         return
       }
 
-      neighbours[col][row] = true
+      this.#tilesCollection[col][row] = true
       count++
 
       collect(col - 1, row)
@@ -160,30 +171,41 @@ export class Field {
     }
 
     collect(col, row)
-
-    if (count < this.minTilesToClick) {
-      return
-    }
-
-    return this.destroyByMap(neighbours)
+    return count
   }
 
-  destroyByMap(map) {
+  destroyCollection(startCol, startRow) {
     let count = 0
     const promises = []
+    const startTile = this.fieldMap[startCol][startRow]
+    let baseDelayed = 0
+    if (startTile.getType() === tileTypes.BOMB) {
+      baseDelayed = startTile.getDestroyTime()
+    }
 
-    map.forEach((item, col) => {
+    this.#tilesCollection.forEach((item, col) => {
       item.forEach((value, row) => {
         const tile = this.fieldMap[col][row]
-        promises.push(tile.disappear())
+
+        let delayed = baseDelayed + Math.max(Math.abs(col - startCol), Math.abs(row - startRow)) * 100
+        if (tile === startTile) {
+          delayed = 0
+        }
+        promises.push(tile.disappear(delayed))
+
         this.fieldMap[col][row] = null
         count++
       })
     })
+    this.clearCollection()
 
     return Promise.all(promises).then(() => {
       return count
     })
+  }
+
+  clearCollection() {
+    this.#tilesCollection = []
   }
 
   async topUp() {
@@ -210,5 +232,28 @@ export class Field {
     }
     await Promise.all(fallPromises)
     await Promise.all(createdTiles.map(tile => tile.appear()))
+  }
+
+  hasAllowAction() {
+    for (let col = 0; col < this.numberColumns; col++) {
+      for (let row = 0; row < this.numberRows; row++) {
+        const tile = this.fieldMap[col][row]
+        switch (tile.getType()) {
+          case tileTypes.DEFAULT:
+            const image = tile.image
+            const countTiles = this.collectByColor(col, row, image)
+            if (countTiles >= this.minTilesToClick) {
+              this.clearCollection()
+              return true
+            }
+            break
+          case tileTypes.BOMB:
+            this.clearCollection()
+            return true
+        }
+      }
+    }
+    this.clearCollection()
+    return false
   }
 }

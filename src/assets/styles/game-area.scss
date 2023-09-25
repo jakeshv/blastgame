@@ -51,3 +51,14 @@
     font-size: 48px;
   }
 }
+
+.allow-action {
+  opacity: 0;
+  background: $mediumblue05;
+  visibility: hidden;
+  pointer-events: none;
+
+  &__text {
+    font-size: 26px;
+  }
+}

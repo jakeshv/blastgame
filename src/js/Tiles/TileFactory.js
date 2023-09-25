@@ -3,12 +3,12 @@ import { DefaultTile } from './DefaultTile'
 import { BombTile } from './BombTile'
 
 export class TileFactory {
-  static create(type, context, x, y, width, image = null) {
+  static create(type, ...params) {
     switch (type) {
       case tileTypes.DEFAULT:
-        return new DefaultTile(type, context, x, y, width, image)
+        return new DefaultTile(...params)
       case tileTypes.BOMB:
-        return new BombTile(type, context, x, y, width, image)
+        return new BombTile(...params)
     }
   }
 }

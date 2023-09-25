@@ -13,7 +13,7 @@
     height: 100%;
     padding: 10px;
     border-radius: 20px;
-    box-shadow: 0 0 10px 2px $darkblue;
+    box-shadow: 0 0 5px 2px $cianblue, inset 0 0 4px 0 $lightblue;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -42,7 +42,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: inset 0 0 10px 1px $darkblue;
+    box-shadow: inset 0 0 10px 1px $darkblue, 0 0 4px -1px $lightblue;
 
     &-text {
       font-size: 20px;

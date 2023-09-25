@@ -2,6 +2,8 @@
 @import 'game-area';
 @import 'scopes';
 @import 'progress';
+@import 'button';
+@import 'level-button';
 
 @font-face {
   font-family: Marvin;
@@ -16,26 +18,24 @@
 
 .app {
   width: 100vw;
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
   background: $aqua;
   color: white;
   font-family: Marvin, serif;
 }
 
 .wrapper {
-  max-width: 800px;
-  max-height: 1000px;
+  max-width: 940px;
   margin: 0 auto;
-}
-
-.header {
-  height: 110px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 40px;
+  grid-template-columns: 2fr 1fr;
+  column-gap: 10px;
+  row-gap: 30px;
+  justify-items: center;
 }

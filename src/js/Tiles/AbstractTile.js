@@ -3,20 +3,21 @@ import tileConfig from 'configs/tile'
 const ABSTRACT_METHOD_ERROR = 'Метод должен быть определен в наследуемом классе'
 
 export class AbstractTile {
-  #type = null
+  _type = 'abstract'
+  _appearanceTime = tileConfig.appearanceTime
+  _destroyTime = tileConfig.destroyTime
+
   #targetPosition = {}
   #startPosition = {}
-  #appearanceTime = tileConfig.appearanceTime
-  #destroyTime = tileConfig.destroyTime
   #aspectRatio = tileConfig.aspectRatio
+  #resourceLoader = null
 
-  constructor(type, context, x, y, width, image) {
-    this.#type = type
+  constructor(context, x, y, width, image, resourceLoader) {
+    this.#resourceLoader = resourceLoader
     this.context = context
     this.image = image
 
     this.width = width
-    this.height = width * this.#aspectRatio
     this.#startPosition = {
       x, y
     }
@@ -27,7 +28,19 @@ export class AbstractTile {
   }
 
   getType() {
-    return this.#type
+    return this._type
+  }
+
+  getDestroyTime() {
+    return this._destroyTime
+  }
+
+  getStartPosition() {
+    return this.#startPosition
+  }
+
+  getResourceLoader() {
+    return this.#resourceLoader
   }
 
   draw(x, y, width) {
@@ -35,12 +48,12 @@ export class AbstractTile {
   }
 
   appear() {
-    const duration = this.#appearanceTime
+    const duration = this._appearanceTime
     return this.animateByTime((elapsedTime) => {
       this.clear()
 
-      const stepSize = this.width / this.#appearanceTime
-      const width = elapsedTime >= this.#appearanceTime ? this.width : stepSize * elapsedTime
+      const stepSize = this.width / duration
+      const width = elapsedTime >= duration ? this.width : stepSize * elapsedTime
       const x = this.#startPosition.x + (this.width - width) / 2
       const y = this.#startPosition.y + (this.width - width) / 2 * this.#aspectRatio
 
@@ -81,12 +94,13 @@ export class AbstractTile {
   }
 
   clear() {
-    this.context.clearRect(this.#startPosition.x, this.#startPosition.y, this.width, this.height)
+    this.context.clearRect(this.#startPosition.x, this.#startPosition.y, this.width, this.width * this.#aspectRatio)
   }
 
-  disappear() {
-    const duration = this.#destroyTime
+  disappear(delayedStartTime = 0) {
+    const duration = this._destroyTime
     return this.animateByTime((elapsedTime) => {
+      elapsedTime = elapsedTime <= delayedStartTime ? 0 : elapsedTime - delayedStartTime
       this.clear()
 
       const stepSize = this.width / duration
@@ -95,7 +109,7 @@ export class AbstractTile {
       const y = this.#startPosition.y + (this.width - width) / 2 * this.#aspectRatio
 
       this.draw(x, y, width)
-    }, duration)
+    }, duration + delayedStartTime)
   }
 
   animateByTime(callback, duration) {

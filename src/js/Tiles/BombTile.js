@@ -36,4 +36,19 @@ export class BombTile extends AbstractTile {
     this.context.arc(fuseX, fuseY, fuseRadius, Math.PI,  Math.PI * 1.4)
     this.context.stroke()
   }
+
+  disappear() {
+    const duration = this.getDestroyTime()
+    return this.animateByTime((elapsedTime) => {
+      this.clear()
+      this.draw(this.getStartPosition().x, this.getStartPosition().y, this.width)
+
+      const stepSize = this.width / duration
+      const width = elapsedTime >= duration ? 0 : this.width - stepSize * elapsedTime
+      const x = this.getStartPosition().x + (this.width - width) / 2
+      const y = this.getStartPosition().y + (this.width - width) / 2 * this.getAspectRatio()
+
+      this.draw(x, y, width)
+    }, duration)
+  }
 }

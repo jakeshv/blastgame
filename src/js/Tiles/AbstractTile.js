@@ -10,7 +10,8 @@ export class AbstractTile {
   #destroyTime = tileConfig.destroyTime
   #aspectRatio = tileConfig.aspectRatio
 
-  constructor(type, context, x, y, width, image) {
+  constructor(type, context, x, y, width, image, resourceLoader) {
+    this.resourceLoader = resourceLoader
     this.#type = type
     this.context = context
     this.image = image

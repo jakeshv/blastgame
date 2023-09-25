@@ -8,9 +8,9 @@ export class Game {
   #targetScope = 0
   #refillNumber = 0
 
-  constructor() {
+  constructor(resourceLoader) {
     const canvas = document.getElementById('game-field')
-    this.field = new Field(canvas)
+    this.field = new Field(canvas, resourceLoader)
     this.field.addEventListener('tilesDestroy', this.onTilesDestroy.bind(this))
     this.field.addEventListener('hasNotAllowAction', this.showNotAllowActionWindow.bind(this))
 
@@ -24,8 +24,7 @@ export class Game {
     this.notAllowActionWindow = document.getElementById('not-allow-action-window')
   }
 
-  async init() {
-    await this.field.init()
+  init() {
     this.generateNewLevel()
   }
 

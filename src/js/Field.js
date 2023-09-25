@@ -12,7 +12,8 @@ export class Field {
   }
   #tilesCollection = []
 
-  constructor(canvas) {
+  constructor(canvas, resourceLoader) {
+    this.resourceLoader = resourceLoader
     this.context = canvas.getContext('2d')
     canvas.addEventListener('click', this.onClick.bind(this))
 
@@ -23,7 +24,6 @@ export class Field {
     this.minTilesToClick = fieldConfig.minTilesToClick
 
     // computed
-    this.images = []
     this.fieldMap = []
     this.tileWidth = this.width / this.numberColumns
     this.tileHeight = this.tileWidth * tileConfig.aspectRatio
@@ -43,17 +43,6 @@ export class Field {
     if (this.#listeners.hasOwnProperty(event) && typeof this.#listeners[event] === 'function') {
       this.#listeners[event](...params)
     }
-  }
-
-  async init() {
-    tileConfig.defaultImages.forEach((image) => {
-      let img = new Image()
-      img.src = image.default
-      this.images.push(img)
-    })
-    return Promise.all(this.images.map(img => new Promise(resolve => {
-      img.onload = img.onerror = resolve
-    })))
   }
 
   fill() {
@@ -76,7 +65,8 @@ export class Field {
       col * this.tileWidth,
       row * this.tileHeight,
       this.tileWidth,
-      this.getRandomImage()
+      this.getRandomImage(),
+      this.resourceLoader
     )
     this.fieldMap[col][row] = tile
     return tile
@@ -87,9 +77,10 @@ export class Field {
   }
 
   getRandomImage() {
-    let length = this.colorNumbers && this.colorNumbers < this.images.length ? this.colorNumbers : this.images.length
+    const images = this.resourceLoader.getDefaultTileImages()
+    let length = this.colorNumbers && this.colorNumbers < images.length ? this.colorNumbers : images.length
     const random = Math.floor(Math.random() * length)
-    return this.images[random]
+    return images[random]
   }
 
   setColorNumbers(colorNumbers) {

@@ -1,6 +1,10 @@
 import 'styles/main.scss'
 
 import { Game } from './js/Game'
+import { ResourceLoader } from './js/Services/ResourceLoader'
 
-const gameField = new Game()
-await gameField.init()
+const resourceLoader = new ResourceLoader()
+await resourceLoader.load()
+
+const gameField = new Game(resourceLoader)
+gameField.init()

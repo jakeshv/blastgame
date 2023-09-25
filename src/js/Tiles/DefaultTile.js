@@ -1,9 +1,8 @@
 import { AbstractTile } from './AbstractTile'
+import { tileTypes } from './TileTypes'
 
 export class DefaultTile extends AbstractTile {
-  constructor(type, context, x, y, width, image) {
-    super(type, context, x, y, width, image)
-  }
+  _type = tileTypes.DEFAULT
 
   draw(x, y, width) {
     const height = width * this.getAspectRatio()

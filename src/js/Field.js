@@ -107,14 +107,14 @@ export class Field {
           this.inProcess = false
           return
         }
-        countTiles = await this.destroyCollection()
+        countTiles = await this.destroyCollection(col, row)
         if (countTiles >= fieldConfig.tilesForBomb) {
           await this.createBomb(col, row).appear()
         }
         break
       case tileTypes.BOMB:
         this.collectByRadius(col, row, fieldConfig.bombRadius)
-        countTiles = await this.destroyCollection()
+        countTiles = await this.destroyCollection(col, row)
         break
     }
 
@@ -174,14 +174,25 @@ export class Field {
     return count
   }
 
-  destroyCollection() {
+  destroyCollection(startCol, startRow) {
     let count = 0
     const promises = []
+    const startTile = this.fieldMap[startCol][startRow]
+    let baseDelayed = 0
+    if (startTile.getType() === tileTypes.BOMB) {
+      baseDelayed = startTile.getDestroyTime()
+    }
 
     this.#tilesCollection.forEach((item, col) => {
       item.forEach((value, row) => {
         const tile = this.fieldMap[col][row]
-        promises.push(tile.disappear())
+
+        let delayed = baseDelayed + Math.max(Math.abs(col - startCol), Math.abs(row - startRow)) * 100
+        if (tile === startTile) {
+          delayed = 0
+        }
+        promises.push(tile.disappear(delayed))
+
         this.fieldMap[col][row] = null
         count++
       })

@@ -1,3 +1,3 @@
 export default {
-  maxRefill: 1
+  maxRefill: 2
 }

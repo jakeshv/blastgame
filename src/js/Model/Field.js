@@ -1,7 +1,7 @@
 import tileConfig from 'configs/tile'
 import fieldConfig from 'configs/field'
-import { TileFactory } from './Tiles/TileFactory'
-import { tileTypes } from './Tiles/TileTypes'
+import { TileFactory } from '../Tiles/TileFactory'
+import { tileTypes } from '../Tiles/TileTypes'
 
 export class Field {
   #listeners = {

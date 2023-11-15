@@ -1,6 +1,6 @@
 import 'styles/main.scss'
 
-import { Game } from './js/Game'
+import { Game } from './js/Model/Game'
 import { ResourceLoader } from './js/Services/ResourceLoader'
 
 const resourceLoader = new ResourceLoader()

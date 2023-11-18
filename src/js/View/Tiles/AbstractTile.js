@@ -5,6 +5,7 @@ export class AbstractTile {
   _type = 'abstract'
   _appearanceTime = tileConfig.appearanceTime
   _destroyTime = tileConfig.destroyTime
+  _hovered = false
 
   #targetPosition = {}
   #startPosition = {}
@@ -47,17 +48,48 @@ export class AbstractTile {
     throw Error(errorTypes.ABSTRACT_METHOD_ERROR)
   }
 
+  async onHover() {
+    if (!this._hovered) {
+      this._hovered = true
+      const duration = 400
+      await this.animateByTime((elapsedTime) => {
+        const stepSize = this.width / duration / 4
+
+        let width
+        if (elapsedTime > duration / 2) {
+          width = this.width - stepSize * (duration - elapsedTime)
+        } else if (elapsedTime >= duration) {
+          width = this.width
+        } else {
+          width = this.width - stepSize * elapsedTime
+        }
+
+        this.reDrawByWidth(width)
+      }, duration)
+      this._hovered = false
+    }
+  }
+
+  unHover() {
+    if (this._hovered) {
+      this._hovered = false
+    }
+  }
+
+  reDrawByWidth(width) {
+    this.clear()
+    const x = this.#startPosition.x + (this.width - width) / 2
+    const y = this.#startPosition.y + (this.width - width) / 2 * this.#aspectRatio
+    this.draw(x, y, width)
+  }
+
   appear() {
     const duration = this._appearanceTime
     return this.animateByTime((elapsedTime) => {
-      this.clear()
-
       const stepSize = this.width / duration
       const width = elapsedTime >= duration ? this.width : stepSize * elapsedTime
-      const x = this.#startPosition.x + (this.width - width) / 2
-      const y = this.#startPosition.y + (this.width - width) / 2 * this.#aspectRatio
 
-      this.draw(x, y, width)
+      this.reDrawByWidth(width)
     }, duration)
   }
 
@@ -101,14 +133,11 @@ export class AbstractTile {
     const duration = this._destroyTime
     return this.animateByTime((elapsedTime) => {
       elapsedTime = elapsedTime <= delayedStartTime ? 0 : elapsedTime - delayedStartTime
-      this.clear()
 
       const stepSize = this.width / duration
       const width = elapsedTime >= duration ? 0 : this.width - stepSize * elapsedTime
-      const x = this.#startPosition.x + (this.width - width) / 2
-      const y = this.#startPosition.y + (this.width - width) / 2 * this.#aspectRatio
 
-      this.draw(x, y, width)
+      this.reDrawByWidth(width)
     }, duration + delayedStartTime)
   }
 

@@ -1,4 +1,4 @@
 export default {
   maxRefill: 2,
-  baseLevelTargetScope: 300
+  baseLevelTargetScope: 100
 }

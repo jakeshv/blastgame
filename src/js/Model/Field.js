@@ -15,6 +15,7 @@ export class Field {
     this.resourceLoader = resourceLoader
     this.context = canvas.getContext('2d')
     canvas.addEventListener('click', this.onClick.bind(this))
+    canvas.addEventListener('mousemove', this.onHover.bind(this))
 
     // config
     this.numberRows = fieldConfig.numberRows
@@ -80,18 +81,39 @@ export class Field {
     this.colorNumbers = colorNumbers
   }
 
+  onHover(e) {
+    if (this.inProcess) {
+      return
+    }
+    const col = Math.floor(e.offsetX / this.tileWidth)
+    const row = Math.floor(e.offsetY / this.tileHeight)
+
+    const tile = this.fieldMap[col]?.[row]
+
+    if (tile && this.hoveredTile !== tile) {
+      if (this.hoveredTile) {
+        this.hoveredTile.unHover()
+      }
+      this.hoveredTile = tile
+      if (tile.allowClick()) {
+        this.hoveredTile.onHover()
+      }
+    }
+  }
+
   async onClick(e) {
     if (this.inProcess) {
       return
     }
     this.inProcess = true
+    this.hoveredTile = null
 
     const col = Math.floor(e.offsetX / this.tileWidth)
     const row = Math.floor(e.offsetY / this.tileHeight)
 
     const tile = this.fieldMap[col][row]
 
-    let countTiles = await tile.click(col, row)
+    let countTiles = await tile.click()
 
     if (countTiles) {
       if (tile.getType() === tileTypes.DEFAULT) {

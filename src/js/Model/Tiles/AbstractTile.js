@@ -41,11 +41,15 @@ export class AbstractModelTile {
 
   _removeFromField() {
     this._field[this._col][this._row] = null
+    this._col = null
+    this._row = null
   }
 
   clearChecked() {
     this._field.forEach(col => col.forEach((tile) => {
-      tile.checked = false
+      if (tile) {
+        tile.checked = false
+      }
     }))
   }
 
@@ -65,6 +69,14 @@ export class AbstractModelTile {
     return Promise.all(promises).then(() => {
       return tiles.length
     })
+  }
+
+  onHover() {
+    this._view.onHover()
+  }
+
+  unHover() {
+    this._view.unHover()
   }
 
   destroy() {

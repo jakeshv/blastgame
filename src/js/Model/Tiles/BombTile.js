@@ -33,11 +33,11 @@ export class BombModelTile extends AbstractModelTile {
 
         tile._destroyDelayed += baseDelayed +
           Math.max(Math.abs(col - this._col), Math.abs(row - this._row)) * tileConfig.destroyNextDelayed
+        tile.checked = true
 
         if (tile._canBeActivated) {
           activeTiles.push(tile)
         } else {
-          tile.checked = true
           tiles.push(tile)
         }
       }

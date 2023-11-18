@@ -42,13 +42,7 @@ export class DefaultModelTile extends AbstractModelTile {
   async click() {
     const tiles = this.collect()
     if (tiles.length >= fieldConfig.minTilesToClick) {
-      const promises = []
-      tiles.forEach(tile => {
-        promises.push(tile.destroy())
-      })
-      return Promise.all(promises).then(() => {
-        return tiles.length
-      })
+      return this.destroyTiles(tiles)
     } else {
       this.clearChecked()
       return 0

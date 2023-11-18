@@ -1,6 +1,6 @@
 import { Field } from './Field'
 import gameConfig from 'configs/game'
-import { DefaultView } from '../View/Default'
+import { DefaultView } from '../View/Templates/Default'
 
 export class Game {
   #level = 1

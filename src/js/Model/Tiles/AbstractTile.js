@@ -57,6 +57,16 @@ export class AbstractModelTile {
     return this._view.appear()
   }
 
+  async destroyTiles(tiles) {
+    const promises = []
+    tiles.forEach(tile => {
+      promises.push(tile.destroy())
+    })
+    return Promise.all(promises).then(() => {
+      return tiles.length
+    })
+  }
+
   destroy() {
     this._removeFromField()
     return this._view.disappear(this._destroyDelayed)

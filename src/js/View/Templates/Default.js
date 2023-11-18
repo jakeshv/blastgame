@@ -1,4 +1,6 @@
 export class DefaultView {
+  windowDelayTime = 1500
+
   constructor() {
     this.movesElement = document.getElementById('moves')
     this.scopesElement = document.getElementById('scopes')
@@ -24,7 +26,7 @@ export class DefaultView {
     window.style.visibility = 'visible'
     window.style.opacity = '1'
     window.style.pointerEvents = 'auto'
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    await new Promise(resolve => setTimeout(resolve, this.windowDelayTime))
     window.style.opacity = '0'
     window.style.pointerEvents = 'none'
   }

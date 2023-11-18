@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
   <title>Blast Game</title>
@@ -9,13 +9,13 @@
   <div class="wrapper">
     <div class="content">
       <div class="progress">
-        <span class="progress__text">Прогресс</span>
+        <span class="progress__text">Progress</span>
         <div class="progress__line">
           <div id="progress" class="progress__value"></div>
         </div>
       </div>
       <div class="level-button">
-        <span class="level-button__text">Уровень</span>
+        <span class="level-button__text">Level</span>
         <div class="button">
           <span id="current-level" class="button__value">1</span>
         </div>
@@ -23,14 +23,14 @@
       <div class="game-area">
         <div class="game-area__content">
           <div id="level-window" class="game-area__window level">
-            <span class="level__text">Уровень</span>
+            <span class="level__text">Level</span>
             <span id="level" class="level__value">1</span>
           </div>
           <div id="not-allow-action-window" class="game-area__window allow-action">
-            <span class="allow-action__text">Нет доступных ходов</span>
+            <span class="allow-action__text">No moves available</span>
           </div>
           <div id="lose-window" class="game-area__window lose">
-            <span class="lose__text">К сожалению, Вы проиграли</span>
+            <span class="lose__text">game over</span>
           </div>
           <canvas id="game-field" class="game-area__field" width="540"></canvas>
         </div>
@@ -41,7 +41,7 @@
             <span id="moves" class="scopes__moves-value">0</span>
           </div>
           <div class="scopes__scope">
-            <span class="scopes__scope-text">Очки:</span>
+            <span class="scopes__scope-text">Scopes:</span>
             <span id="scopes" class="scopes__scope-value">0</span>
           </div>
         </div>

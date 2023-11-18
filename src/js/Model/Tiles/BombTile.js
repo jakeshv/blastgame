@@ -51,13 +51,7 @@ export class BombModelTile extends AbstractModelTile {
 
   async click() {
     const tiles = this.collect()
-    const promises = []
-    tiles.forEach(tile => {
-      promises.push(tile.destroy())
-    })
-    return Promise.all(promises).then(() => {
-      return tiles.length
-    })
+    return this.destroyTiles(tiles)
   }
 
   allowClick() {

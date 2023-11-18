@@ -1,6 +1,5 @@
 import tileConfig from 'configs/tile'
-
-const ABSTRACT_METHOD_ERROR = 'Метод должен быть определен в наследуемом классе'
+import { errorTypes } from '../../Types/ErrorTypes'
 
 export class AbstractTile {
   _type = 'abstract'
@@ -12,15 +11,16 @@ export class AbstractTile {
   #aspectRatio = tileConfig.aspectRatio
   #resourceLoader = null
 
-  constructor(context, x, y, width, image, resourceLoader) {
+  constructor(context, width, image, resourceLoader) {
     this.#resourceLoader = resourceLoader
     this.context = context
     this.image = image
 
     this.width = width
-    this.#startPosition = {
-      x, y
-    }
+  }
+
+  setStartPosition(x, y) {
+    this.#startPosition = { x, y }
   }
 
   getAspectRatio() {
@@ -44,7 +44,7 @@ export class AbstractTile {
   }
 
   draw(x, y, width) {
-    throw Error(ABSTRACT_METHOD_ERROR)
+    throw Error(errorTypes.ABSTRACT_METHOD_ERROR)
   }
 
   appear() {

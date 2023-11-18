@@ -1,5 +1,5 @@
 import { AbstractTile } from './AbstractTile'
-import { tileTypes } from './TileTypes'
+import { tileTypes } from '../../Types/TileTypes'
 
 export class DefaultTile extends AbstractTile {
   _type = tileTypes.DEFAULT

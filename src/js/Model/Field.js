@@ -1,7 +1,7 @@
 import tileConfig from 'configs/tile'
 import fieldConfig from 'configs/field'
-import { TileFactory } from '../Tiles/TileFactory'
-import { tileTypes } from '../Tiles/TileTypes'
+import { tileTypes } from '../Types/TileTypes'
+import { TileModelFactory } from './Tiles/TileFactory'
 
 export class Field {
   #listeners = {
@@ -10,7 +10,6 @@ export class Field {
     hasNotAllowAction: () => {
     }
   }
-  #tilesCollection = []
 
   constructor(canvas, resourceLoader) {
     this.resourceLoader = resourceLoader
@@ -21,7 +20,6 @@ export class Field {
     this.numberRows = fieldConfig.numberRows
     this.numberColumns = fieldConfig.numberColumns
     this.width = fieldConfig.width
-    this.minTilesToClick = fieldConfig.minTilesToClick
 
     // computed
     this.fieldMap = []
@@ -49,7 +47,7 @@ export class Field {
     for (let col = 0; col < this.numberColumns; col++) {
       this.fieldMap[col] = []
       for (let row = 0; row < this.numberRows; row++) {
-        this.createTile(col, row).appear().then()
+        this.createTile(col, row).appear()
       }
     }
 
@@ -59,21 +57,16 @@ export class Field {
   }
 
   createTile(col, row, type = tileTypes.DEFAULT) {
-    const tile = TileFactory.create(
+    const tile = TileModelFactory.create(
       type,
       this.context,
-      col * this.tileWidth,
-      row * this.tileHeight,
       this.tileWidth,
       this.getRandomImage(),
       this.resourceLoader
     )
-    this.fieldMap[col][row] = tile
+    tile.setField(this.fieldMap)
+    tile.setPosition(col, row)
     return tile
-  }
-
-  createBomb(col, row) {
-    return this.createTile(col, row, tileTypes.BOMB)
   }
 
   getRandomImage() {
@@ -97,115 +90,25 @@ export class Field {
     const row = Math.floor(e.offsetY / this.tileHeight)
 
     const tile = this.fieldMap[col][row]
-    let countTiles = 0
-    switch (tile.getType()) {
-      case tileTypes.DEFAULT:
-        const image = tile.image
-        countTiles = this.collectByColor(col, row, image)
-        if (countTiles < this.minTilesToClick) {
-          this.clearCollection()
-          this.inProcess = false
-          return
-        }
-        countTiles = await this.destroyCollection(col, row)
+
+    let countTiles = await tile.click(col, row)
+
+    if (countTiles) {
+      if (tile.getType() === tileTypes.DEFAULT) {
         if (countTiles >= fieldConfig.tilesForBomb) {
-          await this.createBomb(col, row).appear()
+          await this.createTile(col, row, tileTypes.BOMB).appear()
         }
-        break
-      case tileTypes.BOMB:
-        this.collectByRadius(col, row, fieldConfig.bombRadius)
-        countTiles = await this.destroyCollection(col, row)
-        break
-    }
+      }
 
-    this.fireEvent('tilesDestroy', countTiles)
-    await this.topUp()
+      this.fireEvent('tilesDestroy', countTiles)
+      await this.topUp()
 
-    if (!this.hasAllowAction()) {
-      this.fireEvent('hasNotAllowAction')
+      if (!this.hasAllowAction()) {
+        this.fireEvent('hasNotAllowAction')
+      }
     }
 
     this.inProcess = false
-  }
-
-  collectByRadius(centerCol, centerRow, radius) {
-    for (let col = centerCol - radius; col <= centerCol + radius; col++) {
-      for (let row = centerRow - radius; row <= centerRow + radius; row++) {
-        const tile = this.fieldMap[col]?.[row]
-
-        if (!this.#tilesCollection[col]) {
-          this.#tilesCollection[col] = []
-        }
-        if (!tile || this.#tilesCollection[col][row]) {
-          continue
-        }
-        this.#tilesCollection[col][row] = true
-
-        if (tile.getType() === tileTypes.BOMB) {
-          this.collectByRadius(col, row, fieldConfig.bombRadius)
-        }
-      }
-    }
-  }
-
-  collectByColor(col, row, image) {
-    let count = 0
-
-    let collect = (col, row) => {
-      const tile = this.fieldMap[col]?.[row]
-      if (!this.#tilesCollection[col]) {
-        this.#tilesCollection[col] = []
-      }
-
-      if (!tile || tile.getType() !== tileTypes.DEFAULT || this.#tilesCollection[col][row] || tile.image !== image) {
-        return
-      }
-
-      this.#tilesCollection[col][row] = true
-      count++
-
-      collect(col - 1, row)
-      collect(col + 1, row)
-      collect(col, row - 1)
-      collect(col, row + 1)
-    }
-
-    collect(col, row)
-    return count
-  }
-
-  destroyCollection(startCol, startRow) {
-    let count = 0
-    const promises = []
-    const startTile = this.fieldMap[startCol][startRow]
-    let baseDelayed = 0
-    if (startTile.getType() === tileTypes.BOMB) {
-      baseDelayed = startTile.getDestroyTime()
-    }
-
-    this.#tilesCollection.forEach((item, col) => {
-      item.forEach((value, row) => {
-        const tile = this.fieldMap[col][row]
-
-        let delayed = baseDelayed + Math.max(Math.abs(col - startCol), Math.abs(row - startRow)) * 100
-        if (tile === startTile) {
-          delayed = 0
-        }
-        promises.push(tile.disappear(delayed))
-
-        this.fieldMap[col][row] = null
-        count++
-      })
-    })
-    this.clearCollection()
-
-    return Promise.all(promises).then(() => {
-      return count
-    })
-  }
-
-  clearCollection() {
-    this.#tilesCollection = []
   }
 
   async topUp() {
@@ -219,11 +122,8 @@ export class Field {
           targets.push(row)
         } else if (targets.length) {
           const targetRow = targets.shift()
-          this.fieldMap[col][row] = null
-          this.fieldMap[col][targetRow] = tile
-          tile.setTargetPosition(col * this.tileWidth, targetRow * this.tileHeight)
           targets.push(row)
-          fallPromises.push(tile.fall())
+          fallPromises.push(tile.fallToPosition(col, targetRow))
         }
       }
       targets.map((targetRow) => {
@@ -238,22 +138,11 @@ export class Field {
     for (let col = 0; col < this.numberColumns; col++) {
       for (let row = 0; row < this.numberRows; row++) {
         const tile = this.fieldMap[col][row]
-        switch (tile.getType()) {
-          case tileTypes.DEFAULT:
-            const image = tile.image
-            const countTiles = this.collectByColor(col, row, image)
-            if (countTiles >= this.minTilesToClick) {
-              this.clearCollection()
-              return true
-            }
-            break
-          case tileTypes.BOMB:
-            this.clearCollection()
-            return true
+        if (tile.allowClick()) {
+          return true
         }
       }
     }
-    this.clearCollection()
     return false
   }
 }

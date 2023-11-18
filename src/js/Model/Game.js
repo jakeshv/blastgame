@@ -97,7 +97,7 @@ export class Game {
   }
 
   calculateTargetScore() {
-    return 100 + this.#level * 30
+    return gameConfig.baseLevelTargetScope + this.#level * 30
   }
 
   calculateColorNumbers() {

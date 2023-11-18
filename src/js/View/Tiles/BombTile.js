@@ -1,5 +1,5 @@
 import { AbstractTile } from './AbstractTile'
-import { tileTypes } from './TileTypes'
+import { tileTypes } from '../../Types/TileTypes'
 
 export class BombTile extends AbstractTile {
   #color = '#c0c0c0'

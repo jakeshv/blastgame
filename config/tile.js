@@ -8,7 +8,8 @@ import * as blast from 'images/blast.png'
 export default {
   aspectRatio: 1.1,
   appearanceTime: 200,
-  destroyTime: 300,
+  destroyTime: 500,
+  destroyNextDelayed: 50,
   fallSpeed: 15, // in px per frame
   defaultImages: [blue, green, red, yellow, purple],
   blastImage: blast

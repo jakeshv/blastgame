@@ -48,7 +48,11 @@ export class Field {
     for (let col = 0; col < this.numberColumns; col++) {
       this.fieldMap[col] = []
       for (let row = 0; row < this.numberRows; row++) {
-        this.createTile(col, row).appear()
+        if (Math.random() >= fieldConfig.chainTileChance) {
+          this.createTile(col, row, tileTypes.CHAIN).appear()
+        } else {
+          this.createTile(col, row).appear()
+        }
       }
     }
 

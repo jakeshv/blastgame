@@ -6,4 +6,5 @@ export default {
   tilesForArrow: 4,
   tilesForBomb: 7,
   bombRadius: 2,
+  chainTileChance: 0.9,
 }

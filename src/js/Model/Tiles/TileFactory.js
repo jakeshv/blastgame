@@ -2,6 +2,7 @@ import { tileTypes } from '../../Types/TileTypes'
 import { DefaultModelTile } from './DefaultTile'
 import { BombModelTile } from './BombTile'
 import { ArrowModelTile } from './ArrowTile'
+import { ChainModelTile } from './ChainTile'
 
 export class TileModelFactory {
   static create(type, ...params) {
@@ -12,6 +13,8 @@ export class TileModelFactory {
         return new BombModelTile(...params)
       case tileTypes.ARROW:
         return new ArrowModelTile(...params)
+      case tileTypes.CHAIN:
+        return new ChainModelTile(...params)
     }
   }
 }

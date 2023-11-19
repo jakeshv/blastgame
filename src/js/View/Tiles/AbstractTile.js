@@ -86,11 +86,11 @@ export class AbstractTile {
     this.draw(x, y, width)
   }
 
-  appear() {
+  appear(immediate = false) {
     const duration = this._appearanceTime
     return this.animateByTime((elapsedTime) => {
       const stepSize = this.width / duration
-      const width = elapsedTime >= duration ? this.width : stepSize * elapsedTime
+      const width = elapsedTime >= duration || immediate ? this.width : stepSize * elapsedTime
 
       this.reDrawByWidth(width)
     }, duration)

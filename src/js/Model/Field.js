@@ -119,6 +119,8 @@ export class Field {
       if (tile.getType() === tileTypes.DEFAULT) {
         if (countTiles >= fieldConfig.tilesForBomb) {
           await this.createTile(col, row, tileTypes.BOMB).appear()
+        } else if (countTiles >= fieldConfig.tilesForArrow) {
+          await this.createTile(col, row, tileTypes.ARROW).appear()
         }
       }
 

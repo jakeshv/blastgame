@@ -1,4 +1,5 @@
 export const tileTypes = {
   DEFAULT: 'DefaultTile',
-  BOMB: 'BombTile'
+  BOMB: 'BombTile',
+  ARROW: 'ArrowTile'
 }

@@ -3,6 +3,7 @@ export default {
   numberColumns: 8,
   width: 540,
   minTilesToClick: 2,
-  tilesForBomb: 6,
+  tilesForArrow: 4,
+  tilesForBomb: 7,
   bombRadius: 2,
 }

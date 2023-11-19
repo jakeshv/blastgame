@@ -65,7 +65,7 @@ export class AbstractTile {
           width = this.width - stepSize * elapsedTime
         }
 
-        this.reDrawByWidth(width)
+        this.reDrawOnHover(width)
       }, duration)
       this._hovered = false
     }
@@ -73,6 +73,10 @@ export class AbstractTile {
 
   unHover() {
     this._hovered = false
+  }
+
+  reDrawOnHover(width) {
+    this.reDrawByWidth(width)
   }
 
   reDrawByWidth(width) {

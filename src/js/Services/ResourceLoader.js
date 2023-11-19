@@ -3,6 +3,7 @@ import tileConfig from 'configs/tile'
 export class ResourceLoader {
   #defaultTileImages = []
   #blastTileImage = null
+  #chainTileImage = null
 
   constructor() {
     this.loaded = false
@@ -10,8 +11,10 @@ export class ResourceLoader {
 
   async load() {
     const resources = []
+    let img
+
     tileConfig.defaultImages.forEach((image) => {
-      let img = new Image()
+      img = new Image()
       img.src = image.default
       this.#defaultTileImages.push(img)
       resources.push(new Promise(resolve => {
@@ -19,9 +22,16 @@ export class ResourceLoader {
       }))
     })
 
-    let img = new Image()
+    img = new Image()
     img.src = tileConfig.blastImage.default
     this.#blastTileImage = img
+    resources.push(new Promise(resolve => {
+      img.onload = img.onerror = resolve
+    }))
+
+    img = new Image()
+    img.src = tileConfig.chainImage.default
+    this.#chainTileImage = img
     resources.push(new Promise(resolve => {
       img.onload = img.onerror = resolve
     }))
@@ -45,5 +55,10 @@ export class ResourceLoader {
   getBlastTileImage() {
     this.checkLoadStatus()
     return this.#blastTileImage
+  }
+
+  getChainTileImage() {
+    this.checkLoadStatus()
+    return this.#chainTileImage
   }
 }

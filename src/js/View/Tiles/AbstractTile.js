@@ -1,26 +1,28 @@
 import tileConfig from 'configs/tile'
-
-const ABSTRACT_METHOD_ERROR = 'Метод должен быть определен в наследуемом классе'
+import { errorTypes } from '../../Types/ErrorTypes'
 
 export class AbstractTile {
   _type = 'abstract'
   _appearanceTime = tileConfig.appearanceTime
   _destroyTime = tileConfig.destroyTime
+  _hoverTime = tileConfig.hoverTime
+  _hovered = false
 
   #targetPosition = {}
   #startPosition = {}
   #aspectRatio = tileConfig.aspectRatio
   #resourceLoader = null
 
-  constructor(context, x, y, width, image, resourceLoader) {
+  constructor(context, width, image, resourceLoader) {
     this.#resourceLoader = resourceLoader
     this.context = context
     this.image = image
 
     this.width = width
-    this.#startPosition = {
-      x, y
-    }
+  }
+
+  setStartPosition(x, y) {
+    this.#startPosition = { x, y }
   }
 
   getAspectRatio() {
@@ -44,20 +46,53 @@ export class AbstractTile {
   }
 
   draw(x, y, width) {
-    throw Error(ABSTRACT_METHOD_ERROR)
+    throw Error(errorTypes.ABSTRACT_METHOD_ERROR)
   }
 
-  appear() {
+  async onHover() {
+    if (!this._hovered) {
+      this._hovered = true
+      const duration = this._hoverTime
+      await this.animateByTime((elapsedTime) => {
+        const stepSize = this.width / duration / 4
+
+        let width
+        if (elapsedTime > duration / 2) {
+          width = this.width - stepSize * (duration - elapsedTime)
+        } else if (elapsedTime >= duration) {
+          width = this.width
+        } else {
+          width = this.width - stepSize * elapsedTime
+        }
+
+        this.reDrawOnHover(width)
+      }, duration)
+      this._hovered = false
+    }
+  }
+
+  unHover() {
+    this._hovered = false
+  }
+
+  reDrawOnHover(width) {
+    this.reDrawByWidth(width)
+  }
+
+  reDrawByWidth(width) {
+    this.clear()
+    const x = this.#startPosition.x + (this.width - width) / 2
+    const y = this.#startPosition.y + (this.width - width) / 2 * this.#aspectRatio
+    this.draw(x, y, width)
+  }
+
+  appear(immediate = false) {
     const duration = this._appearanceTime
     return this.animateByTime((elapsedTime) => {
-      this.clear()
-
       const stepSize = this.width / duration
-      const width = elapsedTime >= duration ? this.width : stepSize * elapsedTime
-      const x = this.#startPosition.x + (this.width - width) / 2
-      const y = this.#startPosition.y + (this.width - width) / 2 * this.#aspectRatio
+      const width = elapsedTime >= duration || immediate ? this.width : stepSize * elapsedTime
 
-      this.draw(x, y, width)
+      this.reDrawByWidth(width)
     }, duration)
   }
 
@@ -101,14 +136,11 @@ export class AbstractTile {
     const duration = this._destroyTime
     return this.animateByTime((elapsedTime) => {
       elapsedTime = elapsedTime <= delayedStartTime ? 0 : elapsedTime - delayedStartTime
-      this.clear()
 
       const stepSize = this.width / duration
       const width = elapsedTime >= duration ? 0 : this.width - stepSize * elapsedTime
-      const x = this.#startPosition.x + (this.width - width) / 2
-      const y = this.#startPosition.y + (this.width - width) / 2 * this.#aspectRatio
 
-      this.draw(x, y, width)
+      this.reDrawByWidth(width)
     }, duration + delayedStartTime)
   }
 

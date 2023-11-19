@@ -1,3 +1,7 @@
 export default {
-  maxRefill: 1
+  maxRefill: 2,
+  baseLevelTargetScope: 100,
+  targetScopePerLevel: 30,
+  scopePerBlock: 3,
+  baseMoves: 4
 }

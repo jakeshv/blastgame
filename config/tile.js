@@ -9,6 +9,7 @@ export default {
   aspectRatio: 1.1,
   appearanceTime: 200,
   destroyTime: 300,
+  hoverTime: 400,
   destroyNextDelayed: 50,
   fallSpeed: 15, // in px per frame
   defaultImages: [blue, green, red, yellow, purple],

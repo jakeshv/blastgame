@@ -16,8 +16,8 @@ export class Game {
     this.field.addEventListener('hasNotAllowAction', this.notAllowAction.bind(this))
   }
 
-  init() {
-    this.generateNewLevel()
+  async init() {
+    await this.generateNewLevel()
   }
 
   async generateNewLevel() {
@@ -85,19 +85,15 @@ export class Game {
   }
 
   calculateScore(tilesNumber) {
-    let score = 1
-    for (let i = 0; i < tilesNumber; i++) {
-      score += 3
-    }
-    return score
+    return tilesNumber * gameConfig.scopePerBlock
   }
 
   calculateMoves() {
-    return 10 + Math.floor(this.#level / 3)
+    return gameConfig.baseMoves + this.#level
   }
 
   calculateTargetScore() {
-    return gameConfig.baseLevelTargetScope + this.#level * 30
+    return gameConfig.baseLevelTargetScope + this.#level * gameConfig.targetScopePerLevel
   }
 
   calculateColorNumbers() {

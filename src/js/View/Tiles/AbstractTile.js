@@ -5,6 +5,7 @@ export class AbstractTile {
   _type = 'abstract'
   _appearanceTime = tileConfig.appearanceTime
   _destroyTime = tileConfig.destroyTime
+  _hoverTime = tileConfig.hoverTime
   _hovered = false
 
   #targetPosition = {}
@@ -51,7 +52,7 @@ export class AbstractTile {
   async onHover() {
     if (!this._hovered) {
       this._hovered = true
-      const duration = 400
+      const duration = this._hoverTime
       await this.animateByTime((elapsedTime) => {
         const stepSize = this.width / duration / 4
 
@@ -71,9 +72,7 @@ export class AbstractTile {
   }
 
   unHover() {
-    if (this._hovered) {
-      this._hovered = false
-    }
+    this._hovered = false
   }
 
   reDrawByWidth(width) {
